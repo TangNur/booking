@@ -66,7 +66,7 @@ class AuditoriumTypeView(APIView):
 
         return Response(
             {
-                "blocks": res
+                "auditorium_types": res
             }
         )
     
