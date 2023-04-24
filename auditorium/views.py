@@ -1,7 +1,8 @@
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
+from rest_framework.views import APIView
 
-from auditorium.services import read_auditorium, read_auditorium_schedule
+from auditorium.services import read_auditorium, read_auditorium_schedule, read_floor, read_block, read_auditorium_type_tab
 from auditorium.utils import empty_to_none, validate_date_psql
 
 
@@ -32,3 +33,40 @@ class AuditoriumView(ViewSet):
                 "auditorium_schedule": res
             }
         )
+
+
+class FloorView(APIView):
+
+    def get(self, request):
+        res = read_floor()
+
+        return Response(
+            {
+                "floors": res
+            }
+        )
+
+
+class BlockView(APIView):
+
+    def get(self, request):
+        res = read_block()
+
+        return Response(
+            {
+                "blocks": res
+            }
+        )
+    
+
+class AuditoriumTypeView(APIView):
+
+    def get(self, request):
+        res = read_auditorium_type_tab()
+
+        return Response(
+            {
+                "blocks": res
+            }
+        )
+    
