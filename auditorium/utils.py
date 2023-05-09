@@ -48,3 +48,7 @@ def validate_date_psql(date_text, is_null_available=False):
             return None
     except ValueError:
         raise ValueError("Неверный формат даты. Введите DD.MM.YYYY")
+
+
+def get_secret_password():
+    return 'dki#ds%$'
