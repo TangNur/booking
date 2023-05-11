@@ -2,7 +2,7 @@ import hashlib
 
 from rest_framework import serializers
 
-from auditorium.utils import get_secret_password, call_an_sp
+from auditorium.utils import get_secret_password, call_an_sp, empty_to_none
 from authentication.models import UserTab
 
 
@@ -11,11 +11,12 @@ class SignUpSerializer(serializers.ModelSerializer):
     password = serializers.CharField(label='password', style={'input_type': 'password'}, trim_whitespace=True,
                                      write_only=True)
     is_staff = serializers.BooleanField(label='is_staff', write_only=True)
-    group_id = serializers.IntegerField(label='group_id', write_only=True)
+    group_id = serializers.IntegerField(label='group_id', write_only=True, required=False)
+    instructor_id = serializers.IntegerField(label='instructor_id', write_only=True, required=False)
 
     class Meta:
         model = UserTab
-        fields = ('email', 'password', 'group_id', 'is_staff', 'fio')
+        fields = ('email', 'password', 'group_id', 'is_staff', 'fio', 'instructor_id')
 
     def create(self, validated_data):
         return UserTab.objects.create(**validated_data)
@@ -24,11 +25,15 @@ class SignUpSerializer(serializers.ModelSerializer):
         email = attrs.get('email')
         password = attrs.get('password')
         is_staff = attrs.get('is_staff')
-        group_id = attrs.get('group_id')
+        group_id = empty_to_none(attrs.get('group_id'))
+        instructor_id = empty_to_none(attrs.get('instructor_id'))
 
         if is_staff is True:
-            if group_id is not None:
-                raise Exception("For staff without group")
+            if instructor_id is None:
+                raise Exception("Choose instructor")
+        else:
+            if group_id is None:
+                raise Exception("Choose group")
 
         if email and password:
             user = UserTab.objects.filter(email=email).first()
