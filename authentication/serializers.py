@@ -11,8 +11,8 @@ class SignUpSerializer(serializers.ModelSerializer):
     password = serializers.CharField(label='password', style={'input_type': 'password'}, trim_whitespace=True,
                                      write_only=True)
     is_staff = serializers.BooleanField(label='is_staff', write_only=True)
-    group_id = serializers.IntegerField(label='group_id', write_only=True, required=False)
-    instructor_id = serializers.IntegerField(label='instructor_id', write_only=True, required=False)
+    group_id = serializers.IntegerField(label='group_id', write_only=True, required=False, allow_null=True)
+    instructor_id = serializers.IntegerField(label='instructor_id', write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = UserTab
