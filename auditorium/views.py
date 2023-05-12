@@ -1,5 +1,6 @@
 from django.db import transaction, DatabaseError
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework.views import APIView
@@ -11,6 +12,7 @@ from auditorium.utils import empty_to_none, validate_date_psql
 
 
 class AuditoriumView(ViewSet):
+    permission_classes = (IsAuthenticated,)
 
     def read(self, request):
         floor_id = empty_to_none(request.query_params.get('floor_id'))
