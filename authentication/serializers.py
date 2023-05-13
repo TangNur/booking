@@ -60,12 +60,13 @@ class LoginSerializer(serializers.Serializer):
 
         user = UserTab.objects.filter(email=email).first()
 
-        if user.is_active == 0:
-            raise Exception('The user is blocked')
-
         if user is None:
             msg = 'Access denied: wrong email'
             raise serializers.ValidationError(msg, code='authorization')
+
+        if user.is_active == 0:
+            raise Exception('The user is blocked')
+
         if not user.my_check_password(password):
             msg = 'Access denied: wrong password'
             raise serializers.ValidationError(msg, code='authorization')
