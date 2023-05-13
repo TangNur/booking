@@ -2,6 +2,7 @@ import hashlib
 
 from rest_framework import serializers
 
+from auditorium.ex_models.instructor_tab import InstructorTab
 from auditorium.utils import get_secret_password, call_an_sp, empty_to_none
 from authentication.models import UserTab
 
@@ -32,6 +33,9 @@ class SignUpSerializer(serializers.ModelSerializer):
         if is_staff is True:
             if instructor_id is None:
                 raise Exception("Choose instructor")
+            instructor = UserTab.objects.filter(instructor_id=instructor_id, is_active=True).first()
+            if instructor is not None:
+                raise Exception("This instructor has already been linked to another account")
         else:
             if group_id is None:
                 raise Exception("Choose group")
@@ -39,11 +43,9 @@ class SignUpSerializer(serializers.ModelSerializer):
         if email and password:
             user = UserTab.objects.filter(email=email).first()
             if user:
-                msg = 'Access denied: user exist'
-                raise serializers.ValidationError(msg, code='authorization')
+                raise Exception('Access denied: user exist')
         else:
-            msg = 'Both "email" and "password" are required.'
-            raise serializers.ValidationError(msg, code='authorization')
+            raise Exception('Both "email" and "password" are required.')
 
         attrs['password'] = hashlib.md5((password + get_secret_password()).encode('utf-8')).hexdigest()
 
@@ -62,15 +64,13 @@ class LoginSerializer(serializers.Serializer):
         user = UserTab.objects.filter(email=email).first()
 
         if user is None:
-            msg = 'Access denied: wrong email'
-            raise serializers.ValidationError(msg, code='authorization')
+            raise Exception('Access denied: wrong email')
 
         if user.is_active == 0:
             raise Exception('The user is blocked')
 
         if not user.my_check_password(password):
-            msg = 'Access denied: wrong password'
-            raise serializers.ValidationError(msg, code='authorization')
+            raise Exception('Access denied: wrong password')
 
         attrs['user'] = user
         return attrs
@@ -78,6 +78,7 @@ class LoginSerializer(serializers.Serializer):
 
 class MainUserSerializer(serializers.ModelSerializer):
     group_name = serializers.SerializerMethodField()
+    fio = serializers.SerializerMethodField()
 
     class Meta:
         model = UserTab
@@ -85,3 +86,10 @@ class MainUserSerializer(serializers.ModelSerializer):
 
     def get_group_name(self, obj):
         return call_an_sp('get_group_name', [obj.user_id], has_cursor=False)[0]['get_group_name']
+
+    def get_fio(self, obj):
+        if obj.is_staff:
+            instructor = InstructorTab.objects.get(instructor_id=obj.instructor_id)
+            return instructor.instructor_name
+
+        return obj.fio

@@ -15,7 +15,7 @@ class UserTab(AbstractBaseUser, PermissionsMixin):
         db_table = 'user_tab'
 
     user_id = models.AutoField(primary_key=True)
-    fio = models.CharField(max_length=512)
+    fio = models.CharField(max_length=512, blank=True, null=True)
     email = models.CharField(unique=True, max_length=255)
     password = models.CharField(max_length=255)
     group = models.ForeignKey(GroupTab, models.DO_NOTHING, blank=True, null=True)
