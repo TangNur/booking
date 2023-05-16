@@ -101,7 +101,18 @@ def read_booking_request_for_user(user_id):
     return res
 
 
-def approve_request(user_id, booking_request_id):
-    call_an_sp('approve_request', [user_id, booking_request_id], has_cursor=False)
+def approve_request(user_id, booking_request_id, booking_request_status_id):
+    call_an_sp('approve_request', [user_id, booking_request_id, booking_request_status_id], has_cursor=False)
 
     return True
+
+
+def read_booking_request_status():
+    res = call_an_sp('public.read_booking_request_status', [], has_cursor=False)[0]['read_booking_request_status']
+
+    if res is None:
+        return res
+
+    res = json.loads(res)
+
+    return res

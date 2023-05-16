@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 
 from auditorium.services import read_auditorium, read_auditorium_schedule, read_floor, read_block, \
     read_auditorium_type, read_group, read_instructor, request_booking_auditorium, read_booking_request_for_user, \
-    approve_request
+    approve_request, read_booking_request_status
 from auditorium.utils import empty_to_none, validate_date_psql
 
 
@@ -87,13 +87,21 @@ class AuditoriumView(ViewSet):
 
                 user_id = request.user.user_id
                 booking_request_id = empty_to_none(data.get('booking_request_id'))
+                booking_request_status_id = empty_to_none(data.get('booking_request_status_id'))
 
                 approve_request(
                     user_id=user_id,
-                    booking_request_id=booking_request_id
+                    booking_request_id=booking_request_id,
+                    booking_request_status_id=booking_request_status_id
                 )
 
-                return Response({}, status=status.HTTP_200_OK)
+                res = read_booking_request_for_user(user_id=request.user.user_id)
+
+                return Response(
+                    {
+                        "requests": res
+                    }
+                )
         except DatabaseError as e:
             error = str(e)
             error = error[error.find("{") + 1:error.find("}")]
@@ -170,5 +178,17 @@ class InstructorView(APIView):
         return Response(
             {
                 "instructors": res
+            }
+        )
+
+
+class BookingRequestStatusView(APIView):
+
+    def get(self, request):
+        res = read_booking_request_status()
+
+        return Response(
+            {
+                "booking_request_status_ids": res
             }
         )
