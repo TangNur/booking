@@ -1,15 +1,26 @@
-from django.db import transaction, DatabaseError
+from django.db import transaction, DatabaseError, models
+from django.db.models import F, Value
+from django.db.models.functions import Concat
+
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework.views import APIView
 
+from auditorium.ex_models.auditorium_type_tab import AuditoriumTypeTab
+from auditorium.ex_models.block_tab import BlockTab
 from auditorium.ex_models.booking_request_status_tab import BookingRequestStatusTab
-from auditorium.serializers.common_serializers import BookingRequestStatusSerializer
-from auditorium.services import read_auditorium, read_auditorium_schedule, read_floor, read_block, \
-    read_auditorium_type, read_group, read_instructor, request_booking_auditorium, read_booking_request_for_user, \
-    approve_request
+from auditorium.ex_models.floor_tab import FloorTab
+from auditorium.ex_models.group_tab import GroupTab
+from auditorium.ex_models.instructor_tab import InstructorTab
+
+from auditorium.serializers.common_serializers import BookingRequestStatusSerializer, InstructorSerializer, \
+    GroupSerializer, AuditoriumTypeSerializer, BlockSerializer, FloorSerializer
+
+from auditorium.services import read_auditorium, read_auditorium_schedule, request_booking_auditorium, \
+    read_booking_request_for_user, approve_request
+
 from auditorium.utils import empty_to_none, validate_date_psql
 
 
@@ -127,7 +138,8 @@ class AuditoriumView(ViewSet):
 class FloorView(APIView):
 
     def get(self, request):
-        res = read_floor()
+        queryset = FloorTab.objects.order_by('floor_number')
+        res = FloorSerializer(queryset, many=True).data
 
         return Response(
             {
@@ -139,7 +151,8 @@ class FloorView(APIView):
 class BlockView(APIView):
 
     def get(self, request):
-        res = read_block()
+        queryset = BlockTab.objects.order_by('block_number')
+        res = BlockSerializer(queryset, many=True).data
 
         return Response(
             {
@@ -151,7 +164,8 @@ class BlockView(APIView):
 class AuditoriumTypeView(APIView):
 
     def get(self, request):
-        res = read_auditorium_type()
+        queryset = AuditoriumTypeTab.objects.order_by('auditorium_type_abbreviation')
+        res = AuditoriumTypeSerializer(queryset, many=True).data
 
         return Response(
             {
@@ -163,7 +177,16 @@ class AuditoriumTypeView(APIView):
 class GroupView(APIView):
 
     def get(self, request):
-        res = read_group()
+        queryset = GroupTab.objects.order_by('group_year', 'course_id').values('group_id').annotate(
+            group_name=Concat(
+                'speciality__speciality_abbreviation',
+                Value('-'),
+                F('group_year'),
+                F('group_number'),
+                output_field=models.CharField()
+            )
+        ).values('group_id', 'group_name')
+        res = GroupSerializer(queryset, many=True).data
 
         return Response(
             {
@@ -175,7 +198,8 @@ class GroupView(APIView):
 class InstructorView(APIView):
 
     def get(self, request):
-        res = read_instructor()
+        queryset = InstructorTab.objects.filter(is_active=True).order_by('instructor_name')
+        res = InstructorSerializer(queryset, many=True).data
 
         return Response(
             {
@@ -189,7 +213,6 @@ class BookingRequestStatusView(APIView):
     def get(self, request):
         queryset = BookingRequestStatusTab.objects.filter(is_active=True).order_by('booking_request_status_name')
         res = BookingRequestStatusSerializer(queryset, many=True).data
-        # res = read_booking_request_status()
 
         return Response(
             {
