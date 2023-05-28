@@ -104,11 +104,13 @@ class AuditoriumView(ViewSet):
                 user_id = request.user.user_id
                 booking_request_id = empty_to_none(data.get('booking_request_id'))
                 booking_request_status_id = empty_to_none(data.get('booking_request_status_id'))
+                reason_for_refuse = empty_to_none(data.get('reason_for_refuse'))
 
                 approve_request(
                     user_id=user_id,
                     booking_request_id=booking_request_id,
-                    booking_request_status_id=booking_request_status_id
+                    booking_request_status_id=booking_request_status_id,
+                    reason_for_refuse=reason_for_refuse
                 )
 
                 booking_request_status = BookingRequestStatusTab.objects.get(
@@ -138,7 +140,7 @@ class AuditoriumView(ViewSet):
                 
                 """
 
-                send_email(email=receiving_user.email, subject=subject, text=text)
+                # send_email(email=receiving_user.email, subject=subject, text=text)
 
                 res = read_booking_request_for_user(user_id=request.user.user_id)
 

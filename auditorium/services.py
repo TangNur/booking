@@ -46,8 +46,9 @@ def read_booking_request_for_user(user_id):
     return res
 
 
-def approve_request(user_id, booking_request_id, booking_request_status_id):
-    call_an_sp('approve_request', [user_id, booking_request_id, booking_request_status_id], has_cursor=False)
+def approve_request(user_id, booking_request_id, booking_request_status_id, reason_for_refuse):
+    call_an_sp('approve_request', [user_id, booking_request_id, booking_request_status_id, reason_for_refuse],
+               has_cursor=False)
 
     return True
 
