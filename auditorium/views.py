@@ -5,9 +5,11 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework.views import APIView
 
+from auditorium.ex_models.booking_request_status_tab import BookingRequestStatusTab
+from auditorium.serializers.common_serializers import BookingRequestStatusSerializer
 from auditorium.services import read_auditorium, read_auditorium_schedule, read_floor, read_block, \
     read_auditorium_type, read_group, read_instructor, request_booking_auditorium, read_booking_request_for_user, \
-    approve_request, read_booking_request_status
+    approve_request
 from auditorium.utils import empty_to_none, validate_date_psql
 
 
@@ -185,7 +187,9 @@ class InstructorView(APIView):
 class BookingRequestStatusView(APIView):
 
     def get(self, request):
-        res = read_booking_request_status()
+        queryset = BookingRequestStatusTab.objects.filter(is_active=True).order_by('booking_request_status_name')
+        res = BookingRequestStatusSerializer(queryset, many=True).data
+        # res = read_booking_request_status()
 
         return Response(
             {
