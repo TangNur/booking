@@ -11,6 +11,7 @@ from rest_framework.views import APIView
 from auditorium.ex_models.auditorium_type_tab import AuditoriumTypeTab
 from auditorium.ex_models.block_tab import BlockTab
 from auditorium.ex_models.booking_request_status_tab import BookingRequestStatusTab
+from auditorium.ex_models.booking_request_tab import BookingRequestTab
 from auditorium.ex_models.floor_tab import FloorTab
 from auditorium.ex_models.group_tab import GroupTab
 from auditorium.ex_models.instructor_tab import InstructorTab
@@ -21,7 +22,9 @@ from auditorium.serializers.common_serializers import BookingRequestStatusSerial
 from auditorium.services import read_auditorium, read_auditorium_schedule, request_booking_auditorium, \
     read_booking_request_for_user, approve_request
 
-from auditorium.utils import empty_to_none, validate_date_psql
+from auditorium.utils import empty_to_none, validate_date_psql, call_an_sp
+from authentication.models import UserTab
+from utils.mail import send_email
 
 
 class AuditoriumView(ViewSet):
@@ -107,6 +110,35 @@ class AuditoriumView(ViewSet):
                     booking_request_id=booking_request_id,
                     booking_request_status_id=booking_request_status_id
                 )
+
+                booking_request_status = BookingRequestStatusTab.objects.get(
+                    booking_request_status_id=booking_request_status_id
+                )
+
+                booking_request = BookingRequestTab.objects.get(booking_request_id=booking_request_id)
+
+                receiving_user = UserTab.objects.get(user_id=booking_request.user_id)
+
+                if receiving_user.is_staff:
+                    user_fio = InstructorTab.objects.get(instructor_id=receiving_user.instructor_id).instructor_name
+                else:
+                    user_fio = receiving_user.fio
+
+                auditorium_name = call_an_sp(
+                    'get_auditorium_name', [booking_request.auditorium_id], has_cursor=False
+                )[0]['get_auditorium_name']
+
+                subject = "AITU Auditorium Booking System"
+                text = f"""
+                Dear {user_fio}!
+
+                Your request to book an auditorium {auditorium_name} 
+                for this {booking_request.datetime_from} - {booking_request.datetime_to} time period 
+                was {booking_request_status.booking_request_status_code}
+                
+                """
+
+                send_email(email=receiving_user.email, subject=subject, text=text)
 
                 res = read_booking_request_for_user(user_id=request.user.user_id)
 

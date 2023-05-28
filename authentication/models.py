@@ -35,3 +35,6 @@ class UserTab(AbstractBaseUser, PermissionsMixin):
             return True
         else:
             return False
+
+    def my_set_password(self, password):
+        self.password = hashlib.md5((password + get_secret_password()).encode('utf-8')).hexdigest()
