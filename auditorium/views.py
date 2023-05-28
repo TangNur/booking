@@ -140,7 +140,7 @@ class AuditoriumView(ViewSet):
                 
                 """
 
-                # send_email(email=receiving_user.email, subject=subject, text=text)
+                send_email(email=receiving_user.email, subject=subject, text=text)
 
                 res = read_booking_request_for_user(user_id=request.user.user_id)
 
