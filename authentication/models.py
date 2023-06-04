@@ -38,3 +38,16 @@ class UserTab(AbstractBaseUser, PermissionsMixin):
 
     def my_set_password(self, password):
         self.password = hashlib.md5((password + get_secret_password()).encode('utf-8')).hexdigest()
+
+
+
+class RegistrationCodeTab(models.Model):
+    registration_code_id = models.AutoField(primary_key=True)
+    code = models.CharField(max_length=16, blank=True, null=True)
+    email = models.CharField(max_length=256, blank=True, null=True)
+    rowversion = models.DateTimeField(blank=True, null=True)
+    is_checked = models.BooleanField(blank=True, null=True, default=False)
+
+    class Meta:
+        managed = False
+        db_table = 'registration_code_tab'

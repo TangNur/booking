@@ -1,5 +1,6 @@
 import hashlib
 
+from django.core.validators import EmailValidator
 from rest_framework import serializers
 
 from auditorium.ex_models.instructor_tab import InstructorTab
@@ -41,6 +42,17 @@ class SignUpSerializer(serializers.ModelSerializer):
                 raise Exception("Choose group")
 
         if email and password:
+            validator = EmailValidator()
+            try:
+                validator(email)
+            except Exception:
+                raise Exception('Invalid email address')
+
+            domain = email.split('@')[1]
+
+            if domain != 'astanait.edu.kz':
+                raise Exception("You don't have permissions for this module with this email domain")
+
             user = UserTab.objects.filter(email=email).first()
             if user:
                 raise Exception('Access denied: user exist')
