@@ -130,6 +130,12 @@ class AuditoriumView(ViewSet):
                     'get_auditorium_name', [booking_request.auditorium_id], has_cursor=False
                 )[0]['get_auditorium_name']
 
+                if reason_for_refuse is not None:
+                    reason_for_refuse = 'Reason: ' + reason_for_refuse
+
+                if booking_request_status.booking_request_status_code == 'ACCEPTED':
+                    reason_for_refuse = ""
+
                 subject = "AITU Auditorium Booking System"
                 text = f"""
                 Dear {user_fio}!
@@ -138,6 +144,7 @@ class AuditoriumView(ViewSet):
                 for this {booking_request.datetime_from} - {booking_request.datetime_to} time period 
                 was {booking_request_status.booking_request_status_code}
                 
+                {reason_for_refuse}
                 """
 
                 send_email(email=receiving_user.email, subject=subject, text=text)
