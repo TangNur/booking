@@ -15,9 +15,10 @@ from auditorium.ex_models.booking_request_tab import BookingRequestTab
 from auditorium.ex_models.floor_tab import FloorTab
 from auditorium.ex_models.group_tab import GroupTab
 from auditorium.ex_models.instructor_tab import InstructorTab
+from auditorium.ex_models.request_status_config_tab import RequestStatusConfigTab
 
 from auditorium.serializers.common_serializers import BookingRequestStatusSerializer, InstructorSerializer, \
-    GroupSerializer, AuditoriumTypeSerializer, BlockSerializer, FloorSerializer
+    GroupSerializer, AuditoriumTypeSerializer, BlockSerializer, FloorSerializer, RequestStatusConfigSerializer
 
 from auditorium.services import read_auditorium, read_auditorium_schedule, request_booking_auditorium, \
     read_booking_request_for_user, approve_request
@@ -260,3 +261,39 @@ class BookingRequestStatusView(APIView):
                 "booking_request_status_ids": res
             }
         )
+
+
+class RequestStatusConfigView(ViewSet):
+    permission_classes = (IsAuthenticated,)
+
+    def read_all(self, request):
+        queryset = RequestStatusConfigTab.objects.order_by('request_status_config_code')
+        res = RequestStatusConfigSerializer(queryset, many=True).data
+
+        return Response(
+            {
+                "request_status_configs": res
+            }
+        )
+
+    def change(self, request):
+        data = request.data
+
+        request_status_config_id = data.get('request_status_config_id')
+
+        user = UserTab.objects.get(user_id=request.user.user_id)
+        if not user.is_superuser:
+            raise Exception('You do not have permission for this action')
+
+        old_chosen = RequestStatusConfigTab.objects.get(is_chosen=True)
+        old_chosen.is_chosen = False
+        old_chosen.save()
+
+        new_chosen = RequestStatusConfigTab.objects.filter(request_status_config_id=request_status_config_id).first()
+        if new_chosen is None:
+            raise Exception('This status does not exist')
+
+        new_chosen.is_chosen = True
+        new_chosen.save()
+
+        return self.read_all(request)

@@ -6,6 +6,7 @@ from auditorium.ex_models.booking_request_status_tab import BookingRequestStatus
 from auditorium.ex_models.floor_tab import FloorTab
 from auditorium.ex_models.group_tab import GroupTab
 from auditorium.ex_models.instructor_tab import InstructorTab
+from auditorium.ex_models.request_status_config_tab import RequestStatusConfigTab
 
 
 class BookingRequestStatusSerializer(serializers.ModelSerializer):
@@ -44,3 +45,9 @@ class FloorSerializer(serializers.ModelSerializer):
     class Meta:
         model = FloorTab
         fields = ('floor_id', 'floor_name', 'floor_number')
+
+
+class RequestStatusConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RequestStatusConfigTab
+        fields = ('request_status_config_id', 'request_status_config_code', 'request_status_config_name', 'is_chosen')

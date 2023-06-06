@@ -1,6 +1,6 @@
 from django.urls import path
 from auditorium.views import AuditoriumView, FloorView, BlockView, AuditoriumTypeView, GroupView, InstructorView, \
-    BookingRequestStatusView
+    BookingRequestStatusView, RequestStatusConfigView
 
 urlpatterns = [
     path('read/', AuditoriumView.as_view({"get": "read"})),
@@ -16,4 +16,7 @@ urlpatterns = [
     path('common/groups/read/', GroupView.as_view()),
     path('common/instructors/read/', InstructorView.as_view()),
     path('common/booking_request_statuses/read/', BookingRequestStatusView.as_view()),
+
+    path('common/request_status_configs/read/', RequestStatusConfigView.as_view({"get": "read_all"})),
+    path('common/request_status_configs/change/', RequestStatusConfigView.as_view({"post": "change"})),
 ]
