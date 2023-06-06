@@ -277,23 +277,31 @@ class RequestStatusConfigView(ViewSet):
         )
 
     def change(self, request):
-        data = request.data
+        try:
+            data = request.data
 
-        request_status_config_id = data.get('request_status_config_id')
+            request_status_config_id = data.get('request_status_config_id')
 
-        user = UserTab.objects.get(user_id=request.user.user_id)
-        if not user.is_superuser:
-            raise Exception('You do not have permission for this action')
+            user = UserTab.objects.get(user_id=request.user.user_id)
+            if not user.is_superuser:
+                raise Exception('You do not have permission for this action')
 
-        new_chosen = RequestStatusConfigTab.objects.filter(request_status_config_id=request_status_config_id).first()
-        if new_chosen is None:
-            raise Exception('This status does not exist')
+            new_chosen = RequestStatusConfigTab.objects.filter(request_status_config_id=request_status_config_id).first()
+            if new_chosen is None:
+                raise Exception('This status does not exist')
 
-        old_chosen = RequestStatusConfigTab.objects.get(is_chosen=True)
-        old_chosen.is_chosen = False
-        old_chosen.save()
+            old_chosen = RequestStatusConfigTab.objects.get(is_chosen=True)
+            old_chosen.is_chosen = False
+            old_chosen.save()
 
-        new_chosen.is_chosen = True
-        new_chosen.save()
+            new_chosen.is_chosen = True
+            new_chosen.save()
 
-        return self.read_all(request)
+            return self.read_all(request)
+        except Exception as e:
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
