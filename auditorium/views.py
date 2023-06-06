@@ -285,13 +285,13 @@ class RequestStatusConfigView(ViewSet):
         if not user.is_superuser:
             raise Exception('You do not have permission for this action')
 
-        old_chosen = RequestStatusConfigTab.objects.get(is_chosen=True)
-        old_chosen.is_chosen = False
-        old_chosen.save()
-
         new_chosen = RequestStatusConfigTab.objects.filter(request_status_config_id=request_status_config_id).first()
         if new_chosen is None:
             raise Exception('This status does not exist')
+
+        old_chosen = RequestStatusConfigTab.objects.get(is_chosen=True)
+        old_chosen.is_chosen = False
+        old_chosen.save()
 
         new_chosen.is_chosen = True
         new_chosen.save()
