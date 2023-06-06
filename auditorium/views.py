@@ -67,13 +67,55 @@ class AuditoriumView(ViewSet):
                 datetime_from = empty_to_none(data.get('datetime_from'))
                 datetime_to = empty_to_none(data.get('datetime_to'))
 
-                request_booking_auditorium(
+                booking_request_id = request_booking_auditorium(
                     user_id=user_id,
                     auditorium_id=auditorium_id,
                     reason=reason,
                     datetime_from=datetime_from,
                     datetime_to=datetime_to
                 )
+
+                request_config = RequestStatusConfigTab.objects.get(is_chosen=True)
+                if request_config.request_status_config_code != 'MANUALLY':
+                    if request_config.request_status_config_code == 'ACCEPT_ALL':
+                        booking_request_status = BookingRequestStatusTab.objects.get(
+                            booking_request_status_code='ACCEPTED'
+                        )
+                    elif request_config.request_status_config_code == 'REFUSE_ALL':
+                        booking_request_status = BookingRequestStatusTab.objects.get(
+                            booking_request_status_code='REFUSED'
+                        )
+
+                    booking_request = BookingRequestTab.objects.get(booking_request_id=booking_request_id)
+
+                    receiving_user = UserTab.objects.get(user_id=booking_request.user_id)
+
+                    if receiving_user.is_staff:
+                        user_fio = InstructorTab.objects.get(instructor_id=receiving_user.instructor_id).instructor_name
+                    else:
+                        user_fio = receiving_user.fio
+
+                    auditorium_name = call_an_sp(
+                        'get_auditorium_name', [booking_request.auditorium_id], has_cursor=False
+                    )[0]['get_auditorium_name']
+
+                    reason_for_refuse = 'Reason: Automatically refused'
+
+                    if booking_request_status.booking_request_status_code == 'ACCEPTED':
+                        reason_for_refuse = ""
+
+                    subject = "AITU Auditorium Booking System"
+                    text = f"""
+                    Dear {user_fio}!
+
+                    Your request to book an auditorium {auditorium_name} 
+                    for this {booking_request.datetime_from} - {booking_request.datetime_to} time period 
+                    was {booking_request_status.booking_request_status_code}
+
+                    {reason_for_refuse}
+                    """
+
+                    send_email(email=receiving_user.email, subject=subject, text=text)
 
                 day = validate_date_psql(
                     empty_to_none(request.query_params.get('day')),

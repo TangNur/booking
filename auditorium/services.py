@@ -28,10 +28,11 @@ def read_auditorium_schedule(auditorium_id, day):
 
 
 def request_booking_auditorium(user_id, auditorium_id, reason, datetime_from, datetime_to):
-    call_an_sp('request_booking_auditorium', [user_id, auditorium_id, reason, datetime_from, datetime_to],
-               has_cursor=False)
+    booking_request_id = call_an_sp('request_booking_auditorium', [
+        user_id, auditorium_id, reason, datetime_from, datetime_to
+    ], has_cursor=False)[0]['request_booking_auditorium']
 
-    return True
+    return booking_request_id
 
 
 def read_booking_request_for_user(user_id):

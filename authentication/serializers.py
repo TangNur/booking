@@ -76,7 +76,7 @@ class LoginSerializer(serializers.Serializer):
         user = UserTab.objects.filter(email=email).first()
 
         if user is None:
-            raise Exception('Access denied: not existing email')
+            raise Exception('Access denied: not existing user')
 
         if user.is_active == 0:
             raise Exception('The user is blocked')
