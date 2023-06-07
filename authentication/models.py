@@ -45,7 +45,7 @@ class RegistrationCodeTab(models.Model):
     registration_code_id = models.AutoField(primary_key=True)
     code = models.CharField(max_length=16, blank=True, null=True)
     email = models.CharField(max_length=256, blank=True, null=True)
-    rowversion = models.DateTimeField(blank=True, null=True)
+    rowversion = models.DateTimeField(auto_now_add=True)
     is_checked = models.BooleanField(blank=True, null=True, default=False)
 
     class Meta:
